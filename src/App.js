@@ -1,21 +1,43 @@
+import { useState } from 'react'
 import { Formik, Form, Field } from 'formik'
 import './header.css'
+import './content.css'
+import './article.css'
+
 const App = () => {
+  const [photos, setPhotos] = useState([])
+  const open = url => window.open(url)
+  console.log({ photos })
   return (
     <div>
       <header>
         <Formik
-        initialValues = {{ search: '' }}
-        onSumit={async value=>{
-          //llamar api de unsplash
-          console.log(value)
+        initialValues={{ search: ''}}
+        onSubmit = {async values => {
+          const response = await fetch(`https://api.unsplash.com/search/photos?per_page=20&query=${values.search}`, {
+            headers: {
+              'Authorization': 'Client-ID T600ma9gcbPeqSvF2-Tr_XSFdd4_i6ayA3kwOIGyLow'
+            }
+          })
+          const data = await response.json()
+          //llamar a la api de unsplash
+          setPhotos(data.results)
         }}
         >
-          <Form>
-            <Field name="search"/>
-          </Form>
+        <Form>
+          <Field name="search"/>
+        </Form>
         </Formik>
       </header>
+      <div className="container">
+        <div className="center">
+          {photos.map(photo =>
+            <article key={photo.id} onClick={() => open(photo.links.html)}>
+              <img src={ photo.urls.regular}/>
+              <p>{[photo.description,photo.alt_description].join('-')}</p>
+            </article>)}
+        </div>
+      </div>
     </div>
   )
 }
